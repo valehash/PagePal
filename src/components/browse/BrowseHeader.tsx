@@ -28,7 +28,7 @@ const BrowseHeader = ({
     <header className="fixed top-0 left-0 right-0 h-[80px] bg-gray-900 border-b border-gray-800 z-50">
       <div className="max-w-7xl mx-auto h-full px-6 flex items-center justify-between">
         <div className="flex items-center gap-8">
-          <h1 className="text-2xl font-bold text-white">BookFlix</h1>
+          <h1 className="text-2xl font-bold text-white">PagePal</h1>
 
           <form onSubmit={handleSearch} className="relative w-[400px]">
             <Input
