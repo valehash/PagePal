@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "../ui/card";
 import {
   Tooltip,
@@ -52,6 +53,13 @@ const BookGrid = ({
   books = defaultBooks,
   onBookClick = () => {},
 }: BookGridProps) => {
+  const navigate = useNavigate();
+
+  const handleBookClick = (book: Book) => {
+    onBookClick(book);
+    navigate(`/book/${book.id}`);
+  };
+
   return (
     <div className="bg-black p-6 min-h-screen">
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
@@ -61,7 +69,7 @@ const BookGrid = ({
               <TooltipTrigger>
                 <Card
                   className="transition-transform duration-200 hover:scale-105 cursor-pointer bg-gray-900"
-                  onClick={() => onBookClick(book)}
+                  onClick={() => handleBookClick(book)}
                 >
                   <CardContent className="p-0 relative">
                     <img
