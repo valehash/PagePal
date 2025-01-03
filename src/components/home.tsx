@@ -8,12 +8,15 @@ import CategoryRow from "./browse/CategoryRow";
 interface HomeProps {
   onBookSelect?: (book: any) => void;
 }
-
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const Home = ({ onBookSelect = () => {} }: HomeProps) => {
   const [isPromptMode, setIsPromptMode] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const categories = [
+
+  /*const categories = [
     {
       title: "Trending Now",
       books: [
@@ -73,6 +76,21 @@ const Home = ({ onBookSelect = () => {} }: HomeProps) => {
       ],
     },
   ];
+*/
+  // using the api to get the results displayed with regular search.
+  const fetchSearchResults = async () => {
+    setIsLoading(true);
+    try{
+      const response =  await fetch(`${API_BASE_URL}/search?query=${encodeURIComponent(searchQuery)}`)
+      const data = await response.json();
+      setSearchResults(data.books);
+    } catch (error) {
+        console.error("Error fetching search results:", error);
+      } finally {
+        setIsLoading(false);
+      }
+      };
+  };
 
   return (
     <div className="min-h-screen bg-gray-950">
