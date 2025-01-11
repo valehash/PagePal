@@ -8,88 +8,75 @@ import CategoryRow from "./browse/CategoryRow";
 interface HomeProps {
   onBookSelect?: (book: any) => void;
 }
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 const Home = ({ onBookSelect = () => {} }: HomeProps) => {
   const [isPromptMode, setIsPromptMode] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
-
-  /*const categories = [
-    {
-      title: "Trending Now",
-      books: [
-        {
-          id: "1",
-          title: "The Silent Echo",
-          author: "Maria Rivers",
-          coverUrl:
-            "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=600&fit=crop",
-          rating: 4.7,
-        },
-        {
-          id: "2",
-          title: "Quantum Dreams",
-          author: "David Chen",
-          coverUrl:
-            "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&h=600&fit=crop",
-          rating: 4.5,
-        },
-        {
-          id: "3",
-          title: "Lost in Time",
-          author: "Sarah Blake",
-          coverUrl:
-            "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&h=600&fit=crop",
-          rating: 4.8,
-        },
-      ],
-    },
-    {
-      title: "New Releases",
-      books: [
-        {
-          id: "4",
-          title: "Digital Horizons",
-          author: "Alex Morgan",
-          coverUrl:
-            "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&h=600&fit=crop",
-          rating: 4.6,
-        },
-        {
-          id: "5",
-          title: "The Last Page",
-          author: "Emma Wilson",
-          coverUrl:
-            "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&h=600&fit=crop",
-          rating: 4.4,
-        },
-        {
-          id: "6",
-          title: "Midnight Tales",
-          author: "James Wright",
-          coverUrl:
-            "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=600&fit=crop",
-          rating: 4.9,
-        },
-      ],
-    },
-  ];
-*/
-  // using the api to get the results displayed with regular search.
+  // Fetch search results from API
   const fetchSearchResults = async () => {
+    // Don't search if query is empty
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
     setIsLoading(true);
-    try{
-      const response =  await fetch(`${API_BASE_URL}/search?query=${encodeURIComponent(searchQuery)}`)
-      const data = await response.json();
-      setSearchResults(data.books);
-    } catch (error) {
-        console.error("Error fetching search results:", error);
-      } finally {
-        setIsLoading(false);
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/books/search?query=${encodeURIComponent(searchQuery.trim())}&mode=normal&max_results=10`,
+      );
+      const text = await response.text();
+      console.log("Raw response text:", text);
+
+      if (text) {
+        const books = JSON.parse(text);
+        console.log("Parsed data:", books);
+        setSearchResults(books);
+      } else {
+        console.log("Empty response received");
+        setSearchResults([]);
       }
-      };
+    } catch (error) {
+      console.error("Error fetching search results:", error);
+      setSearchResults([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle search input
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    if (query.trim()) {
+      fetchSearchResults();
+    } else {
+      setSearchResults([]);
+    }
+  };
+
+  // Handle prompt submission
+  const onPromptSubmit = async (prompt: string) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/prompt`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          prompt,
+          is_prompt_mode: true,
+        }),
+      });
+      const data = await response.json();
+      console.log("Prompt response:", data);
+    } catch (error) {
+      console.error("Error submitting prompt:", error);
+    }
   };
 
   return (
@@ -98,37 +85,24 @@ const Home = ({ onBookSelect = () => {} }: HomeProps) => {
         isPromptMode={isPromptMode}
         onModeToggle={setIsPromptMode}
         searchQuery={searchQuery}
-        onSearch={setSearchQuery}
+        onSearch={handleSearch}
       />
-
       <div className="pt-[80px]">
         <HeroSection onBookClick={onBookSelect} />
-
         {isPromptMode ? (
           <PromptSection
-            onPromptSubmit={(prompt) =>
-              console.log("Prompt submitted:", prompt)
-            }
-            isLoading={false}
+            onPromptSubmit={onPromptSubmit}
+            isLoading={isLoading}
           />
         ) : (
           <SearchSection
             onBookSelect={onBookSelect}
             initialGenre="all"
             initialRating={0}
+            books={searchQuery.trim() ? searchResults : undefined}
+            isLoading={isLoading}
           />
         )}
-
-        <div className="space-y-6 py-8">
-          {categories.map((category, index) => (
-            <CategoryRow
-              key={index}
-              title={category.title}
-              books={category.books}
-              onBookClick={onBookSelect}
-            />
-          ))}
-        </div>
       </div>
     </div>
   );

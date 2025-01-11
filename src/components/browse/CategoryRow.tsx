@@ -1,14 +1,17 @@
 import React from "react";
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
-import { ChevronLeft, ChevronRight, Star } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface Book {
   id: string;
   title: string;
-  author: string;
-  coverUrl: string;
-  rating: number;
+  authors: string[];
+  imageLinks?: {
+    thumbnail?: string;
+    smallThumbnail?: string;
+  };
+  description: string | null;
 }
 
 interface CategoryRowProps {
@@ -17,52 +20,9 @@ interface CategoryRowProps {
   onBookClick?: (book: Book) => void;
 }
 
-const defaultBooks: Book[] = [
-  {
-    id: "1",
-    title: "The Great Adventure",
-    author: "John Smith",
-    coverUrl:
-      "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=600&fit=crop",
-    rating: 4.5,
-  },
-  {
-    id: "2",
-    title: "Mystery of the Ages",
-    author: "Jane Doe",
-    coverUrl:
-      "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&h=600&fit=crop",
-    rating: 4.8,
-  },
-  {
-    id: "3",
-    title: "Future Perfect",
-    author: "Alan Johnson",
-    coverUrl:
-      "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&h=600&fit=crop",
-    rating: 4.2,
-  },
-  {
-    id: "4",
-    title: "The Lost City",
-    author: "Sarah Wilson",
-    coverUrl:
-      "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&h=600&fit=crop",
-    rating: 4.6,
-  },
-  {
-    id: "5",
-    title: "Midnight Tales",
-    author: "Robert Black",
-    coverUrl:
-      "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&h=600&fit=crop",
-    rating: 4.3,
-  },
-];
-
 const CategoryRow = ({
   title = "Featured Books",
-  books = defaultBooks,
+  books = [],
   onBookClick = () => {},
 }: CategoryRowProps) => {
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
@@ -107,7 +67,9 @@ const CategoryRow = ({
               >
                 <CardContent className="p-0">
                   <img
-                    src={book.coverUrl}
+                    src={
+                      book.imageLinks?.thumbnail || "/api/placeholder/200/280"
+                    }
                     alt={book.title}
                     className="w-full h-[280px] object-cover rounded-t-lg"
                   />
@@ -116,14 +78,9 @@ const CategoryRow = ({
                       {book.title}
                     </h3>
                     <p className="text-sm text-gray-400 truncate">
-                      {book.author}
+                      {book.authors?.join(", ") || "Unknown Author"}
                     </p>
-                    <div className="flex items-center mt-2">
-                      <Star className="w-4 h-4 text-yellow-400 mr-1" />
-                      <span className="text-sm text-gray-300">
-                        {book.rating}
-                      </span>
-                    </div>
+                    {/* Removed rating since it's not in the API response */}
                   </div>
                 </CardContent>
               </Card>
