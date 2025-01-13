@@ -18,41 +18,11 @@ interface Book {
 }
 
 interface BookGridProps {
-  books?: Book[];
+  books: Book[];
   onBookClick?: (book: Book) => void;
 }
 
-const defaultBooks: Book[] = [
-  {
-    id: "1",
-    title: "The Great Adventure",
-    author: "John Smith",
-    coverUrl:
-      "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=600&fit=crop",
-    rating: 4.5,
-  },
-  {
-    id: "2",
-    title: "Mystery of the Ages",
-    author: "Jane Doe",
-    coverUrl:
-      "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&h=600&fit=crop",
-    rating: 4.8,
-  },
-  {
-    id: "3",
-    title: "Future Perfect",
-    author: "Alan Johnson",
-    coverUrl:
-      "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&h=600&fit=crop",
-    rating: 4.2,
-  },
-];
-
-const BookGrid = ({
-  books = defaultBooks,
-  onBookClick = () => {},
-}: BookGridProps) => {
+const BookGrid = ({ books, onBookClick = () => {} }: BookGridProps) => {
   const navigate = useNavigate();
 
   const handleBookClick = (book: Book) => {
@@ -66,7 +36,7 @@ const BookGrid = ({
         {books.map((book) => (
           <TooltipProvider key={book.id}>
             <Tooltip>
-              <TooltipTrigger>
+              <TooltipTrigger asChild>
                 <Card
                   className="transition-transform duration-200 hover:scale-105 cursor-pointer bg-gray-900"
                   onClick={() => handleBookClick(book)}
@@ -84,7 +54,9 @@ const BookGrid = ({
                       </p>
                       <div className="flex items-center mt-2">
                         <Star className="w-4 h-4 text-yellow-400 mr-1" />
-                        <span className="text-sm">{book.rating}</span>
+                        <span className="text-sm">
+                          {book.rating.toFixed(1)}
+                        </span>
                       </div>
                     </div>
                   </CardContent>
@@ -94,7 +66,7 @@ const BookGrid = ({
                 <div className="p-2">
                   <p className="font-semibold">{book.title}</p>
                   <p className="text-sm">{book.author}</p>
-                  <p className="text-sm">Rating: {book.rating}/5</p>
+                  <p className="text-sm">Rating: {book.rating.toFixed(1)}/5</p>
                 </div>
               </TooltipContent>
             </Tooltip>
