@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useMemo } from "react";
 import FilterBar from "./FilterBar";
 import BookGrid from "./BookGrid";
 
@@ -8,62 +8,34 @@ interface Book {
   author: string;
   coverUrl: string;
   rating: number;
+  genre?: string;
 }
 
 interface SearchSectionProps {
   onBookSelect?: (book: Book) => void;
-  initialGenre?: string;
-  initialRating?: number;
-  books?: Book[];
-  isLoading?: boolean;
+  books: Book[];
+  isLoading: boolean;
+  error: string | null;
 }
-const defaultBooks = [
-  {
-    id: "1",
-    title: "The Great Adventure",
-    author: "John Smith",
-    coverUrl:
-      "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=600&fit=crop",
-    rating: 4.5,
-  },
-  {
-    id: "2",
-    title: "Mystery of the Ages",
-    author: "Jane Doe",
-    coverUrl:
-      "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&h=600&fit=crop",
-    rating: 4.8,
-  },
-  {
-    id: "3",
-    title: "Future Perfect",
-    author: "Alan Johnson",
-    coverUrl:
-      "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&h=600&fit=crop",
-    rating: 4.2,
-  },
-];
 
 const SearchSection = ({
   onBookSelect = () => {},
-  initialGenre = "all",
-  initialRating = 0,
-  books,
+  books = [],
   isLoading = false,
+  error = null,
 }: SearchSectionProps) => {
-  const [selectedGenre, setSelectedGenre] = React.useState(initialGenre);
-  const [selectedRating, setSelectedRating] = React.useState(initialRating);
+  const [selectedGenre, setSelectedGenre] = useState<string>("all");
+  const [selectedRating, setSelectedRating] = useState<number>(0);
 
-  // Use either provided books or default books
-  const booksToDisplay = books || defaultBooks;
-
-  const filteredBooks = React.useMemo(() => {
-    return booksToDisplay.filter((book) => {
-      const genreMatch = selectedGenre === "all" || true; // Placeholder for genre filtering
+  const filteredBooks = useMemo(() => {
+    return books.filter((book) => {
+      const genreMatch =
+        selectedGenre === "all" ||
+        book.genre?.toLowerCase() === selectedGenre.toLowerCase();
       const ratingMatch = book.rating >= selectedRating;
       return genreMatch && ratingMatch;
     });
-  }, [booksToDisplay, selectedGenre, selectedRating]);
+  }, [books, selectedGenre, selectedRating]);
 
   return (
     <div className="w-full min-h-[800px] bg-gray-950 flex flex-col">
@@ -74,15 +46,25 @@ const SearchSection = ({
         onRatingChange={setSelectedRating}
       />
       <div className="flex-1">
-        {isLoading ? (
-          <div className="text-center text-white py-8">Loading...</div>
+        {error ? (
+          <div className="text-center text-red-500 py-8">{error}</div>
+        ) : isLoading ? (
+          <div className="text-center text-white py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4" />
+            Searching for books...
+          </div>
         ) : filteredBooks.length > 0 ? (
           <BookGrid books={filteredBooks} onBookClick={onBookSelect} />
         ) : (
-          <div className="text-center text-white py-8">No books found</div>
+          <div className="text-center text-white py-8">
+            {books.length > 0
+              ? "No books match the selected filters"
+              : "Start searching to find books"}
+          </div>
         )}
       </div>
     </div>
   );
 };
+
 export default SearchSection;
