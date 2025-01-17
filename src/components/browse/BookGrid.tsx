@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "../ui/card";
 import {
@@ -7,7 +7,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
-import { Star } from "lucide-react";
+import { Star, ImageOff } from "lucide-react";
 
 interface Book {
   id: string;
@@ -21,6 +21,52 @@ interface BookGridProps {
   books: Book[];
   onBookClick?: (book: Book) => void;
 }
+
+const BookCard = ({ book, onClick }: { book: Book; onClick: () => void }) => {
+  const [imageError, setImageError] = useState(false);
+
+  // Fallback image URL - you can replace this with your own fallback image
+  //const fallbackImage = "/api/placeholder/240/360";
+
+  return (
+    <Card
+      className="transition-transform duration-200 hover:scale-105 cursor-pointer bg-gray-900"
+      onClick={onClick}
+    >
+      <CardContent className="p-0 relative">
+        {imageError ? (
+          <div className="w-full h-[300px] bg-gray-800 flex items-center justify-center rounded-t-lg">
+            <ImageOff className="w-12 h-12 text-gray-400" />
+          </div>
+        ) : (
+          <img
+            src={book.coverUrl || fallbackImage}
+            alt={book.title}
+            className="w-full h-[300px] object-cover rounded-t-lg"
+            onError={(e) => {
+              // If the main image fails, try the fallback
+              const imgElement = e.target as HTMLImageElement;
+              if (imgElement.src !== fallbackImage) {
+                imgElement.src = fallbackImage;
+              } else {
+                // If fallback also fails, show error state
+                setImageError(true);
+              }
+            }}
+          />
+        )}
+        <div className="p-4 text-white">
+          <h3 className="font-semibold truncate">{book.title}</h3>
+          <p className="text-sm text-gray-400 truncate">{book.author}</p>
+          <div className="flex items-center mt-2">
+            <Star className="w-4 h-4 text-yellow-400 mr-1" />
+            <span className="text-sm">{book.rating.toFixed(1)}</span>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
 
 const BookGrid = ({ books, onBookClick = () => {} }: BookGridProps) => {
   const navigate = useNavigate();
@@ -37,30 +83,9 @@ const BookGrid = ({ books, onBookClick = () => {} }: BookGridProps) => {
           <TooltipProvider key={book.id}>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Card
-                  className="transition-transform duration-200 hover:scale-105 cursor-pointer bg-gray-900"
-                  onClick={() => handleBookClick(book)}
-                >
-                  <CardContent className="p-0 relative">
-                    <img
-                      src={book.coverUrl}
-                      alt={book.title}
-                      className="w-full h-[300px] object-cover rounded-t-lg"
-                    />
-                    <div className="p-4 text-white">
-                      <h3 className="font-semibold truncate">{book.title}</h3>
-                      <p className="text-sm text-gray-400 truncate">
-                        {book.author}
-                      </p>
-                      <div className="flex items-center mt-2">
-                        <Star className="w-4 h-4 text-yellow-400 mr-1" />
-                        <span className="text-sm">
-                          {book.rating.toFixed(1)}
-                        </span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <div>
+                  <BookCard book={book} onClick={() => handleBookClick(book)} />
+                </div>
               </TooltipTrigger>
               <TooltipContent>
                 <div className="p-2">
